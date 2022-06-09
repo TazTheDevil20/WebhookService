@@ -103,7 +103,7 @@ function SendRequest(WebhookObject,WebhookUrl)
 			Message = "Invalid webhook"
 		}
 	elseif response.StatusCode == 429 then
-		local retry_after = response["Headers"]["ratelimit-reset"] or response["Headers"]["retry_after"]
+		local retry_after = response["Headers"]["x-ratelimit-retry-after"]
 
 		if not retry_after then
 			return {
@@ -119,7 +119,7 @@ function SendRequest(WebhookObject,WebhookUrl)
 
 		IsRequestRateLimited = false
 
-		SendRequest(WebhookObject,WebhookUrl)
+		return SendRequest(WebhookObject,WebhookUrl)
 	elseif response.StatusCode == 200 then
 		return {
 			Success = true,
@@ -146,8 +146,12 @@ function WebhookService:CreateWebhook(WebhookData: WebhookData | nil)
 end
 
 function WebhookService:SendAsync(WebhookObject: WebhookObject,WebhookUrl: string?)
-	if not WebhookObject or not WebhookUrl then return false end
-	if not ValidateWebhookObject(WebhookObject) then return false end
+	if not WebhookObject or not WebhookUrl then
+		return { Success = false, Code = 0, Message = "Missing parameters" }
+	end
+	if not ValidateWebhookObject(WebhookObject) then
+		return { Success = false, Code = 0, Message = "Invalid webhook object" }
+	end
 
 	local success, response = pcall(function()
 		if IsRequestRateLimited then
@@ -156,6 +160,11 @@ function WebhookService:SendAsync(WebhookObject: WebhookObject,WebhookUrl: strin
 		
 		return SendRequest(WebhookObject,WebhookUrl)
 	end)
+	
+	if not success then
+		-- Mock a response so that the error can be caught by the user
+		return { Success = false, Code = 0, Message = response }
+	end
 	
 	return response
 end
