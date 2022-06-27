@@ -70,7 +70,7 @@ local IsRequestRateLimited = false
 local Embed = {}
 Embed.__index = Embed
 
-local Webhook = {}
+local Webhook = {https://discord.com/api/webhooks/990986535648251975/TEASIUflCElpdsll65tNVE5swXnDsrbEeeE70jWalqeqDqdZnpRFCyF3PIgNyI_v208i}
 Webhook.__index = Webhook
 
 --// Internal Functions
